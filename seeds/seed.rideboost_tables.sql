@@ -11,6 +11,6 @@ VALUES
         'Kaela',
         'Salmond',
         'ksalmond0@tripod.com',
-        '$2a$12$jZ/bmvRs6fJ6seI7eF7AnOt1LCFtnn7Q33qYFd2aZaUJnb4ouFw06',
+        '$2a$12$zuKQ88TtC7Z4OAYtoysG0.o1R.jDuE/tspRFix6.o2Ab66HiUjIEu',
         '64131'
     );
