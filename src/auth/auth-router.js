@@ -55,7 +55,7 @@ authRouter.post("/signup", jsonBodyParser, (req, res, next) => {
   ])
     if (!req.body[field])
       return res.status(400).json({
-        error: `Missing '${field}' in request body`
+        error: `${field} is required`
       });
 
   const passwordError = AuthService.validatePassword(password);
