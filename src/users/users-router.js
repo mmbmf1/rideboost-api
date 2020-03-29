@@ -1,14 +1,90 @@
 const express = require("express");
+const unirest = require("unirest");
 const UsersService = require("./users-service");
+const config = require("../config");
 
 const usersRouter = express.Router();
 const jsonBodyParser = express.json();
 
+//add middleware for jwt auth
 usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
+  let currentWeatherData;
+  let forecastWeatherData;
+  let eventData;
+  let arrivalData;
+  let departureData;
+
   UsersService.getUsersZipCodeById(req.app.get("db"), req.params.user_id)
     .then(zipcode => {
       res.json(zipcode);
-      //make API calls here?
+      const zip_code = zipcode[0].zip_code;
+      // console.log(zip_code);
+      console.log(new Date());
+
+      //currentWeatherData
+      var req = unirest(
+        "GET",
+        `https://api.openweathermap.org/data/2.5/weather?zip=${zip_code},us&appid=${config.WEATHER_KEY}`
+      ).end(function(res) {
+        if (res.error) throw new Error(res.error);
+        // console.log(res.raw_body);
+        currentWeatherData = res.raw_body;
+        // console.log(currentWeatherData);
+      });
+
+      //forecastWeatherData
+      var req = unirest(
+        "GET",
+        `https://api.openweathermap.org/data/2.5/forecast?zip=${zip_code},us&appid=${config.WEATHER_KEY}`
+      ).end(function(res) {
+        if (res.error) throw new Error(res.error);
+        forecastWeatherData = res.raw_body;
+        // console.log(forecastWeatherData);
+      });
+
+      //arrivalData request
+      var req = unirest(
+        "GET",
+        "https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/2020-03-23T12:00/2020-03-23T13:00?withLeg=false&direction=Arrival"
+      )
+        .headers({
+          "x-rapidapi-host": "aerodatabox.p.rapidapi.com",
+          "x-rapidapi-key": `${config.AIRLINE_KEY}`
+        })
+        .end(function(res) {
+          if (res.error) throw new Error(res.error);
+          arrivalData = res.raw_body;
+          // console.log(arrivalData);
+        });
+
+      //departureData request
+      var req = unirest(
+        "GET",
+        "https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/2020-03-23T12:00/2020-03-23T13:00?withLeg=false&direction=Departure"
+      )
+        .headers({
+          "x-rapidapi-host": "aerodatabox.p.rapidapi.com",
+          "x-rapidapi-key": `${config.AIRLINE_KEY}`
+        })
+        .end(function(res) {
+          if (res.error) throw new Error(res.error);
+          departureData = res.raw_body;
+          // console.log(departureData);
+        });
+
+      //eventData request
+      var req = unirest(
+        "GET",
+        `http://api.eventful.com/json/events/search?app_key=${config.EVENT_KEY}&location=${zip_code}&date=today&within=52&sort_order=popularity`
+      ).end(function(res) {
+        if (res.error) throw new Error(res.error);
+        eventData = res.raw_body;
+        // console.log(eventData);
+      });
+
+      //returns undefined for all
+      // console.log(currentWeatherData, forecastWeatherData, arrivalData, departureData, eventData);
+      // res.json({ currentWeatherData, forecastWeatherData, arrivalData, departureData, eventData });
     })
     .catch(next);
 });
