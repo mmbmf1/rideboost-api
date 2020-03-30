@@ -1,5 +1,6 @@
 const express = require("express");
 const unirest = require("unirest");
+const moment = require("moment");
 const UsersService = require("./users-service");
 const config = require("../config");
 
@@ -18,8 +19,10 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
     .then(zipcode => {
       res.json(zipcode);
       const zip_code = zipcode[0].zip_code;
-      // console.log(zip_code);
-      console.log(new Date());
+      const currentDate = moment().format("YYYY-MM-DDTHH:MM");
+      const futureDate = moment()
+        .add(3, "h")
+        .format("YYYY-MM-DDTHH:MM");
 
       //currentWeatherData
       var req = unirest(
@@ -27,7 +30,6 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
         `https://api.openweathermap.org/data/2.5/weather?zip=${zip_code},us&appid=${config.WEATHER_KEY}`
       ).end(function(res) {
         if (res.error) throw new Error(res.error);
-        // console.log(res.raw_body);
         currentWeatherData = res.raw_body;
         // console.log(currentWeatherData);
       });
@@ -45,7 +47,7 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
       //arrivalData request
       var req = unirest(
         "GET",
-        "https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/2020-03-23T12:00/2020-03-23T13:00?withLeg=false&direction=Arrival"
+        `https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/${currentDate}/${futureDate}?withLeg=false&direction=Arrival`
       )
         .headers({
           "x-rapidapi-host": "aerodatabox.p.rapidapi.com",
@@ -60,7 +62,7 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
       //departureData request
       var req = unirest(
         "GET",
-        "https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/2020-03-23T12:00/2020-03-23T13:00?withLeg=false&direction=Departure"
+        `https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/${currentDate}/${futureDate}?withLeg=false&direction=Departure`
       )
         .headers({
           "x-rapidapi-host": "aerodatabox.p.rapidapi.com",
@@ -83,7 +85,6 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
       });
 
       //returns undefined for all
-      // console.log(currentWeatherData, forecastWeatherData, arrivalData, departureData, eventData);
       // res.json({ currentWeatherData, forecastWeatherData, arrivalData, departureData, eventData });
     })
     .catch(next);
