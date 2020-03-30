@@ -13,7 +13,7 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
       const zip_code = zipcode[0].zip_code;
       const currentDate = moment().format("YYYY-MM-DDTHH:MM");
       const futureDate = moment()
-        .add(3, "h")
+        .add(1, "h")
         .format("YYYY-MM-DDTHH:MM");
 
       const currentWeatherPromise = new Promise((resolve, reject) => {
@@ -42,46 +42,46 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
         });
       });
 
-      // const arrivalPromise = new Promise((resolve, reject) => {
-      //   unirest(
-      //     "GET",
-      //     `https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/${currentDate}/${futureDate}?withLeg=false&direction=Arrival`
-      //   )
-      //     .headers({
-      //       "x-rapidapi-host": "aerodatabox.p.rapidapi.com",
-      //       "x-rapidapi-key": `${config.AIRLINE_KEY}`
-      //     })
-      //     .end(res => {
-      //       if (res.error) {
-      //         reject(res.error);
-      //       } else {
-      //         resolve(JSON.parse(res.raw_body));
-      //       }
-      //     });
-      // });
+      const arrivalPromise = new Promise((resolve, reject) => {
+        unirest(
+          "GET",
+          `https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/${currentDate}/${futureDate}?withLeg=false&direction=Arrival`
+        )
+          .headers({
+            "x-rapidapi-host": "aerodatabox.p.rapidapi.com",
+            "x-rapidapi-key": `${config.AIRLINE_KEY}`
+          })
+          .end(res => {
+            if (res.error) {
+              reject(res.error);
+            } else {
+              resolve(JSON.parse(res.raw_body));
+            }
+          });
+      });
 
-      // const departuresPromise = new Promise((resolve, reject) => {
-      //   unirest(
-      //     "GET",
-      //     `https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/${currentDate}/${futureDate}?withLeg=false&direction=Departure`
-      //   )
-      //     .headers({
-      //       "x-rapidapi-host": "aerodatabox.p.rapidapi.com",
-      //       "x-rapidapi-key": `${config.AIRLINE_KEY}`
-      //     })
-      //     .end(res => {
-      //       if (res.error) {
-      //         reject(res.error);
-      //       } else {
-      //         resolve(JSON.parse(res.raw_body));
-      //       }
-      //     });
-      // });
+      const departuresPromise = new Promise((resolve, reject) => {
+        unirest(
+          "GET",
+          `https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/${currentDate}/${futureDate}?withLeg=false&direction=Departure`
+        )
+          .headers({
+            "x-rapidapi-host": "aerodatabox.p.rapidapi.com",
+            "x-rapidapi-key": `${config.AIRLINE_KEY}`
+          })
+          .end(res => {
+            if (res.error) {
+              reject(res.error);
+            } else {
+              resolve(JSON.parse(res.raw_body));
+            }
+          });
+      });
 
       const eventPromise = new Promise((resolve, reject) => {
         unirest(
           "GET",
-          `http://api.eventful.com/json/events/search?app_key=${config.EVENT_KEY}&location=${zip_code}&date=today&within=52&sort_order=popularity`
+          `http://api.eventful.com/json/events/search?app_key=${config.EVENT_KEY}&location=${zip_code}&date=today&within=25&category=music, sports&sort_order=popularity`
         ).end(res => {
           if (res.error) {
             reject(res.error);
@@ -94,8 +94,8 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
       Promise.all([
         currentWeatherPromise,
         forecastWeatherPromise,
-        // arrivalPromise,
-        // departuresPromise,
+        arrivalPromise,
+        departuresPromise,
         eventPromise
       ]).then(data => res.json({ data }));
     })
