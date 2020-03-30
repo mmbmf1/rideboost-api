@@ -1,6 +1,7 @@
 const express = require("express");
 const unirest = require("unirest");
 const moment = require("moment");
+const zipcodes = require("zipcodes");
 const UsersService = require("./users-service");
 const config = require("../config");
 
@@ -15,6 +16,8 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
       const futureDate = moment()
         .add(1, "h")
         .format("YYYY-MM-DDTHH:MM");
+
+      const location = zipcodes.lookup(zip_code);
 
       const currentWeatherPromise = new Promise((resolve, reject) => {
         unirest(
@@ -96,7 +99,8 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
         forecastWeatherPromise,
         arrivalPromise,
         departuresPromise,
-        eventPromise
+        eventPromise,
+        location
       ]).then(data => res.json({ data }));
     })
     .catch(next);
