@@ -1,7 +1,8 @@
 const express = require("express");
 const unirest = require("unirest");
-const moment = require("moment");
+const moment_timezone = require("moment-timezone");
 const zipcodes = require("zipcodes");
+const zipcode_to_timezone = require("zipcode-to-timezone");
 const UsersService = require("./users-service");
 const config = require("../config");
 
@@ -12,8 +13,13 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
   UsersService.getUsersZipCodeById(req.app.get("db"), req.params.user_id)
     .then(zipcode => {
       const zip_code = zipcode[0].zip_code;
-      const currentDate = moment().format("YYYY-MM-DDTHH:MM");
-      const futureDate = moment()
+      const timezone = zipcode_to_timezone.lookup(zip_code);
+      // console.log(timezone);
+      const currentDate = moment_timezone()
+        .tz(timezone)
+        .format("YYYY-MM-DDTHH:MM");
+      const futureDate = moment_timezone()
+        .tz(timezone)
         .add(1, "h")
         .format("YYYY-MM-DDTHH:MM");
 

@@ -28,10 +28,12 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.20.13",
     "moment": "^2.24.0",
+    "moment-timezone": "^0.5.28",
     "morgan": "^1.10.0",
     "pg": "^7.18.2",
     "unirest": "^0.6.0",
     "xss": "^1.0.6",
+    "zipcode-to-timezone": "0.0.9",
     "zipcodes": "^8.0.0"
   },
   "devDependencies": {
