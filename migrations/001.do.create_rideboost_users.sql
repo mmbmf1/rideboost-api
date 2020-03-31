@@ -5,5 +5,6 @@ CREATE TABLE rideboost_users (
     user_email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     zip_code VARCHAR(5),
+    icao VARCHAR(4),
     date_created TIMESTAMP DEFAULT now() NOT NULL
 );

@@ -3,7 +3,7 @@ const unirest = require("unirest");
 const moment_timezone = require("moment-timezone");
 const zipcodes = require("zipcodes");
 const zipcode_to_timezone = require("zipcode-to-timezone");
-// const airports = require("airport-codes");
+const airports = require("airport-codes");
 const UsersService = require("./users-service");
 const config = require("../config");
 
@@ -12,8 +12,9 @@ const jsonBodyParser = express.json();
 
 usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
   UsersService.getUsersZipCodeById(req.app.get("db"), req.params.user_id)
-    .then(zipcode => {
-      const zip_code = zipcode[0].zip_code;
+    .then(user_data => {
+      const zip_code = user_data[0].zip_code;
+      const icao = user_data[0].icao;
       const timezone = zipcode_to_timezone.lookup(zip_code);
       const currentDate = moment_timezone()
         .tz(timezone)
@@ -24,12 +25,7 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
         .format("YYYY-MM-DDTHH:MM");
 
       const location = zipcodes.lookup(zip_code);
-
-      // console.log(location);
-
-      // const airport = airports.findWhere({ city: location.city }).get('icao');
-
-      // console.log(airport);
+      const airport = airports.findWhere({ icao: icao }).get("iata");
 
       const currentWeatherPromise = new Promise((resolve, reject) => {
         unirest(
@@ -60,7 +56,7 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
       const airlinePromise = new Promise((resolve, reject) => {
         unirest(
           "GET",
-          `https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/${currentDate}/${futureDate}?withLeg=false`
+          `https://aerodatabox.p.rapidapi.com/flights/airports/icao/${icao}/${currentDate}/${futureDate}?withLeg=false`
         )
           .headers({
             "x-rapidapi-host": "aerodatabox.p.rapidapi.com",
@@ -74,24 +70,6 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
             }
           });
       });
-
-      // const departuresPromise = new Promise((resolve, reject) => {
-      //   unirest(
-      //     "GET",
-      //     `https://aerodatabox.p.rapidapi.com/flights/airports/icao/KMCI/${currentDate}/${futureDate}?withLeg=false&direction=Departure`
-      //   )
-      //     .headers({
-      //       "x-rapidapi-host": "aerodatabox.p.rapidapi.com",
-      //       "x-rapidapi-key": `${config.AIRLINE_KEY}`
-      //     })
-      //     .end(res => {
-      //       if (res.error) {
-      //         reject(res.error);
-      //       } else {
-      //         resolve(JSON.parse(res.raw_body));
-      //       }
-      //     });
-      // });
 
       const eventPromise = new Promise((resolve, reject) => {
         unirest(
@@ -111,7 +89,8 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
         forecastWeatherPromise,
         airlinePromise,
         eventPromise,
-        location
+        location,
+        airport
       ]).then(data => res.json({ data }));
     })
     .catch(next);

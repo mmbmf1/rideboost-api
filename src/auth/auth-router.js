@@ -42,14 +42,22 @@ authRouter.post("/login", jsonBodyParser, (req, res, next) => {
 });
 
 authRouter.post("/signup", jsonBodyParser, (req, res, next) => {
-  const { first_name, last_name, user_email, password, zip_code } = req.body;
+  const {
+    first_name,
+    last_name,
+    user_email,
+    password,
+    zip_code,
+    icao
+  } = req.body;
 
   for (const field of [
     "first_name",
     "last_name",
     "user_email",
     "password",
-    "zip_code"
+    "zip_code",
+    "icao"
   ])
     if (!req.body[field])
       return res.status(400).json({
@@ -72,6 +80,7 @@ authRouter.post("/signup", jsonBodyParser, (req, res, next) => {
           user_email,
           password: hashedPassword,
           zip_code,
+          icao,
           date_created: "now()"
         };
 
