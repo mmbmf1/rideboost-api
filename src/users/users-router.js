@@ -74,7 +74,7 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
       const eventPromise = new Promise((resolve, reject) => {
         unirest(
           "GET",
-          `http://api.eventful.com/json/events/search?app_key=${config.EVENT_KEY}&location=${zip_code}&date=Today&within=15&category=music, sports&sort_order=date&mature=safe`
+          `http://api.eventful.com/json/events/search?app_key=${config.EVENT_KEY}&location=${zip_code}&date=Today&within=15&category=music, sports&mature=safe&change_multi_day_start=true`
         ).end(res => {
           if (res.error) {
             reject(res.error);
@@ -90,7 +90,9 @@ usersRouter.get("/dashboard/:user_id", jsonBodyParser, (req, res, next) => {
         airlinePromise,
         eventPromise,
         location,
-        airport
+        airport,
+        currentDate,
+        futureDate
       ]).then(data => res.json({ data }));
     })
     .catch(next);
