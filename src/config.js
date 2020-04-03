@@ -10,5 +10,5 @@ module.exports = {
   JWT_EXPIRY: process.env.JWT_EXPIRY || "3h",
   WEATHER_KEY: process.env.WEATHER_KEY,
   AIRLINE_KEY: process.env.AIRLINE_KEY,
-  EVENT_KEY: process.env.EVENT_KEY
+  EVENT_KEY: process.env.EVENT_KEY,
 };
