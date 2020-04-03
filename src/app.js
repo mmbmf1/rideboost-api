@@ -19,7 +19,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", usersRouter);
 
 app.get("/", (req, res) => {
-  res.send("Hello, World!");
+  res.send("Hello, Rideboost!");
 });
 
 app.use(function errorHandler(error, req, res, next) {
