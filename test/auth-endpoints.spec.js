@@ -38,10 +38,10 @@ describe("Auth endpoints", function() {
       .post("/api/auth/signup")
       .send(testUser)
       .then(registeredUser => {
-        const { user_name, password } = testUser;
+        const { user_email, password } = testUser;
         supertest(app)
           .post("/auth/api/login")
-          .send({ user_name, password })
+          .send({ user_email, password })
           .then(res => {
             authToken = res.body.authToken;
             console.log(authToken);
