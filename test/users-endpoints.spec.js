@@ -31,31 +31,31 @@ describe("Users endpoint", function () {
 
   before("clean table", () => db("rideboost_users").truncate());
 
-  //   beforeEach("register and login user", done => {
-  //     supertest(app)
-  //       .post("/api/auth/signup")
-  //       .send(testUser)
-  //       .then(registeredUser => {
-  //         const { user_email, password } = testUser;
-  //         supertest(app)
-  //           .post("/api/auth/login")
-  //           .send({ user_email, password })
-  //           .then(res => {
-  //             authToken = res.body.authToken;
-  //             console.log(authToken);
-  //             done();
-  //           });
-  //       });
-  //   });
+  beforeEach("register and login user", (done) => {
+    supertest(app)
+      .post("/api/auth/signup")
+      .send(testUser)
+      .then((registeredUser) => {
+        const { user_email, password } = testUser;
+        supertest(app)
+          .post("/api/auth/login")
+          .send({ user_email, password })
+          .then((res) => {
+            authToken = res.body.authToken;
+            console.log(authToken);
+            done();
+          });
+      });
+  });
 
   afterEach("clean up", () => db("rideboost_users").truncate());
 
   //need help with this test
 
   describe("GET /api/user/dashboard/:user_id", () => {
-    beforeEach("insert test user", () => {
-      return db.into("rideboost_users").insert(testUser);
-    });
+    // beforeEach("insert test user", () => {
+    //   return db.into("rideboost_users").insert(testUser);
+    // });
     it("responds 200 with user info", () => {
       const user_id = testUser.id;
       return supertest(app).get(`/api/user/dashboard/${user_id}`).expect(200);
