@@ -1,6 +1,6 @@
 const express = require("express");
 const unirest = require("unirest");
-const moment_timezone = require("moment-timezone");
+const moment = require("moment-timezone");
 const zipcodes = require("zipcodes");
 const zipcode_to_timezone = require("zipcode-to-timezone");
 const airports = require("airport-codes");
@@ -20,13 +20,13 @@ usersRouter
         const zip_code = user_data[0].zip_code;
         const icao = user_data[0].icao;
         const timezone = zipcode_to_timezone.lookup(zip_code);
-        const currentDate = moment_timezone()
-          .tz(timezone)
-          .format("YYYY-MM-DDTHH:MM");
-        const futureDate = moment_timezone()
-          .tz(timezone)
+        const currentDate = moment
+          .tz(moment(), timezone)
+          .format("YYYY-MM-DDTHH:mm");
+        const futureDate = moment
+          .tz(moment(), timezone)
           .add(1, "h")
-          .format("YYYY-MM-DDTHH:MM");
+          .format("YYYY-MM-DDTHH:mm");
 
         console.log(currentDate, futureDate);
 
