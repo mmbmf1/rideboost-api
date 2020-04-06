@@ -44,7 +44,6 @@ describe("Auth endpoints", function () {
           .send({ user_email, password })
           .then((res) => {
             authToken = res.body.authToken;
-            console.log(authToken);
             done();
           });
       });

@@ -40,7 +40,6 @@ describe("Users endpoint", function () {
     });
     it("responds 200 with user info", () => {
       const user_id = testUser.id;
-      console.log(helpers.makeAuthHeader(testUser));
       return supertest(app)
         .get(`/api/user/dashboard/${user_id}`)
         .set("Authorization", helpers.makeAuthHeader(testUser))

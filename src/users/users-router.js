@@ -27,8 +27,6 @@ usersRouter
           .add(1, "h")
           .format("YYYY-MM-DDTHH:mm");
 
-        console.log(currentDate, futureDate);
-
         const location = zipcodes.lookup(zip_code);
         const airport = airports.findWhere({ icao: icao }).get("iata");
 
