@@ -1,5 +1,6 @@
 const knex = require("knex");
 const app = require("../src/app");
+const helpers = require("./test-helpers");
 
 describe("Users endpoint", function () {
   let db;
@@ -31,34 +32,19 @@ describe("Users endpoint", function () {
 
   before("clean table", () => db("rideboost_users").truncate());
 
-  beforeEach("register and login user", (done) => {
-    supertest(app)
-      .post("/api/auth/signup")
-      .send(testUser)
-      .then((registeredUser) => {
-        const { user_email, password } = testUser;
-        supertest(app)
-          .post("/api/auth/login")
-          .send({ user_email, password })
-          .then((res) => {
-            authToken = res.body.authToken;
-            console.log(authToken);
-            done();
-          });
-      });
-  });
-
   afterEach("clean up", () => db("rideboost_users").truncate());
 
-  //need help with this test
-
-  describe("GET /api/user/dashboard/:user_id", () => {
-    // beforeEach("insert test user", () => {
-    //   return db.into("rideboost_users").insert(testUser);
-    // });
+  describe.only("GET /api/user/dashboard/:user_id", () => {
+    beforeEach("insert test user", () => {
+      return db.into("rideboost_users").insert(testUser);
+    });
     it("responds 200 with user info", () => {
       const user_id = testUser.id;
-      return supertest(app).get(`/api/user/dashboard/${user_id}`).expect(200);
+      console.log(helpers.makeAuthHeader(testUser));
+      return supertest(app)
+        .get(`/api/user/dashboard/${user_id}`)
+        .set("Authorization", helpers.makeAuthHeader(testUser))
+        .expect(200);
     });
   });
 });

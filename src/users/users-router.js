@@ -14,7 +14,6 @@ const jsonBodyParser = express.json();
 usersRouter
   .route("/dashboard/:user_id")
   .get(requireAuth, jsonBodyParser, (req, res, next) => {
-    // .get(jsonBodyParser, (req, res, next) => {
     UsersService.getUsersZipCodeById(req.app.get("db"), req.params.user_id)
       .then((user_data) => {
         const zip_code = user_data[0].zip_code;
@@ -103,6 +102,7 @@ usersRouter
           .then((data) => res.json({ data }))
           .catch((error) => {
             console.error(error.message);
+            next(error.message);
           });
       })
       .catch(next);
