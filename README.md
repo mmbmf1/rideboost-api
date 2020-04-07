@@ -32,17 +32,19 @@ Unirest
 
 ## Landing Page:
 
-![](images/Landing_page_1.jpg)
-![](images/Landing_Page_2.jpg)
+![](images/landing_page_1.jpg)
+![](images/landing_page_2.jpg)
 
-## Backpacks Page:
+## Dashboard:
 
-![](images/BP_collection.jpg)
+![](images/dashboard_1.jpg)
+![](images/dashboard_2.jpg)
+![](images/dashboard_3.jpg)
 
-## Add Backpacks Page:
+## Login:
 
-![](images/BP_Add.jpg)
+![](images/login_page.jpg)
 
-## Edit Backpacks Page:
+## Signup:
 
-![](images/BP_Edit.jpg)
+![](images/signup_page.jpg)
