@@ -1,26 +1,48 @@
-# Express Boilerplate!
+## Name
 
-This is a boilerplate project used for starting new projects!
+rideboost-api
 
-## Set up
+## App
 
-Complete the following steps to start a new project (NEW-PROJECT-NAME):
+https://rideboost.now.sh/
 
-1. Clone this repository to your local machine `git clone BOILERPLATE-URL NEW-PROJECTS-NAME`
-2. `cd` into the cloned repository
-3. Make a fresh start of the git history for this project with `rm -rf .git && git init`
-4. Install the node dependencies `npm install`
-5. Move the example Environment file to `.env` that will be ignored by git and read by the express server `mv example.env .env`
-6. Edit the contents of the `package.json` to use NEW-PROJECT-NAME instead of `"name": "express-boilerplate",`
+## Client Repo
 
-## Scripts
+https://github.com/mmbmf1/rideboost-app
 
-Start the application `npm start`
+## Summary
 
-Start nodemon for the application `npm run dev`
+The rideboost-api serves the Ride Boost app which allows users access to real time weather data, airline arrivals & departures and local events near the driver.
 
-Run the tests `npm test`
+## Endpoint Breakdown
 
-## Deploying
+/api/user/dashboard/:user_id - The user endpoint returns the dashboard for the driver. The endpoint makes calls to 3 different APIs and sends the data to the client. A user must be logged in to access their dashboard.
 
-When your new project is ready for deployment, add a new Heroku application with `heroku create`. This will make a new git remote called "heroku" and you can then `npm run deploy` which will push to this remote's master branch.
+/api/auth/login - verifies the user's login credentials
+
+/api/auth/signup - allows a user to signup for a new account
+
+## Tech
+
+Express.js
+Node.js
+PostgeSQL
+Moment.js
+Unirest
+
+## Landing Page:
+
+![](images/Landing_page_1.jpg)
+![](images/Landing_Page_2.jpg)
+
+## Backpacks Page:
+
+![](images/BP_collection.jpg)
+
+## Add Backpacks Page:
+
+![](images/BP_Add.jpg)
+
+## Edit Backpacks Page:
+
+![](images/BP_Edit.jpg)
