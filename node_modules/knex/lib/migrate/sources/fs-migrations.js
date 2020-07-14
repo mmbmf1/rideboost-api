@@ -1,5 +1,5 @@
 const path = require('path');
-const { sortBy, filter } = require('lodash');
+const sortBy = require('lodash/sortBy');
 
 const { readdir } = require('../../util/fs');
 
@@ -9,6 +9,7 @@ const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
   '.eg',
   '.iced',
   '.js',
+  '.cjs',
   '.litcoffee',
   '.ls',
   '.ts',
@@ -83,7 +84,7 @@ class FsMigrations {
 }
 
 function filterMigrations(migrationSource, migrations, loadExtensions) {
-  return filter(migrations, (migration) => {
+  return migrations.filter((migration) => {
     const migrationName = migrationSource.getMigrationName(migration);
     const extension = path.extname(migrationName);
     return loadExtensions.includes(extension);

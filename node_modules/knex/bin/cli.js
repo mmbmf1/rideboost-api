@@ -24,15 +24,9 @@ const { listMigrations } = require('./utils/migrationsLister');
 
 async function openKnexfile(configPath) {
   let config = require(configPath);
-  if (typeof config  === 'function') {
+  if (typeof config === 'function') {
     config = await config();
   }
-
-  // FYI: By default, the extension for the migration files is inferred
-  //      from the knexfile's extension. So, the following lines are in
-  //      place for backwards compatibility purposes.
-  config.ext = config.ext || path.extname(configPath).replace('.', '');
-
   return config;
 }
 
@@ -55,7 +49,11 @@ async function initKnex(env, opts) {
     ? await openKnexfile(env.configPath)
     : mkConfigObj(opts);
 
-  const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
+  const resolvedConfig = resolveEnvironmentConfig(
+    opts,
+    env.configuration,
+    env.configPath
+  );
   const knex = require(env.modulePath);
   return knex(resolvedConfig);
 }
@@ -64,7 +62,6 @@ function invoke(env) {
   env.modulePath = env.modulePath || env.knexpath || process.env.KNEX_PATH;
 
   const filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
-  let pending = null;
 
   const cliVersion = [
     color.blue('Knex CLI version:'),
@@ -96,7 +93,8 @@ function invoke(env) {
       '--env [name]',
       'environment, default: process.env.NODE_ENV || development'
     )
-    .option('--esm', 'Enable ESM interop.');
+    .option('--esm', 'Enable ESM interop.')
+    .option('--specific [path]', 'Specify one seed file to execute.');
 
   commander
     .command('init')
@@ -115,7 +113,7 @@ function invoke(env) {
       }
       checkLocalModule(env);
       const stubPath = `./knexfile.${type}`;
-      pending = readFile(
+      readFile(
         path.dirname(env.modulePath) +
           '/lib/migrate/stub/knexfile-' +
           type +
@@ -153,7 +151,7 @@ function invoke(env) {
         configOverrides.stub = stub;
       }
 
-      pending = instance.migrate
+      instance.migrate
         .make(name, configOverrides)
         .then((name) => {
           success(color.green(`Created Migration: ${name}`));
@@ -165,19 +163,20 @@ function invoke(env) {
     .command('migrate:latest')
     .description('        Run all migrations that have not yet been run.')
     .option('--verbose', 'verbose')
-    .action(() => {
-      pending = initKnex(env, commander.opts())
-        .then((instance) => instance.migrate.latest())
-        .then(([batchNo, log]) => {
-          if (log.length === 0) {
-            success(color.cyan('Already up to date'));
-          }
-          success(
-            color.green(`Batch ${batchNo} run: ${log.length} migrations`) +
-              (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
-          );
-        })
-        .catch(exit);
+    .action(async () => {
+      try {
+        const instance = await initKnex(env, commander.opts());
+        const [batchNo, log] = await instance.migrate.latest();
+        if (log.length === 0) {
+          success(color.cyan('Already up to date'));
+        }
+        success(
+          color.green(`Batch ${batchNo} run: ${log.length} migrations`) +
+            (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
+        );
+      } catch (err) {
+        exit(err);
+      }
     });
 
   commander
@@ -186,7 +185,7 @@ function invoke(env) {
       '        Run the next or the specified migration that has not yet been run.'
     )
     .action((name) => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.migrate.up({ name }))
         .then(([batchNo, log]) => {
           if (log.length === 0) {
@@ -212,7 +211,7 @@ function invoke(env) {
     .action((cmd) => {
       const { all } = cmd;
 
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.migrate.rollback(null, all))
         .then(([batchNo, log]) => {
           if (log.length === 0) {
@@ -233,13 +232,12 @@ function invoke(env) {
       '        Undo the last or the specified migration that was already run.'
     )
     .action((name) => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.migrate.down({ name }))
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
           }
-
           success(
             color.green(
               `Batch ${batchNo} rolled back the following migrations:\n${log.join(
@@ -255,7 +253,7 @@ function invoke(env) {
     .command('migrate:currentVersion')
     .description('        View the current version for the migration.')
     .action(() => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.migrate.currentVersion())
         .then((version) => {
           success(color.green('Current Version: ') + color.blue(version));
@@ -268,12 +266,26 @@ function invoke(env) {
     .alias('migrate:status')
     .description('        List all migrations files with status.')
     .action(() => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => {
           return instance.migrate.list();
         })
         .then(([completed, newMigrations]) => {
           listMigrations(completed, newMigrations);
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('migrate:unlock')
+    .description('        Forcibly unlocks the migrations lock table.')
+    .action(() => {
+      initKnex(env, commander.opts())
+        .then((instance) => instance.migrate.forceFreeMigrationsLock())
+        .then(() => {
+          success(
+            color.green(`Succesfully unlocked the migrations lock table`)
+          );
         })
         .catch(exit);
     });
@@ -300,7 +312,7 @@ function invoke(env) {
         configOverrides.stub = stub;
       }
 
-      pending = instance.seed
+      instance.seed
         .make(name, configOverrides)
         .then((name) => {
           success(color.green(`Created seed file: ${name}`));
@@ -314,7 +326,7 @@ function invoke(env) {
     .option('--verbose', 'verbose')
     .option('--specific', 'run specific seed file')
     .action(() => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.seed.run({ specific: argv.specific }))
         .then(([log]) => {
           if (log.length === 0) {
@@ -342,11 +354,11 @@ const cli = new Liftoff({
   moduleName: require('../package.json').name,
 });
 
-cli.on('require', function(name) {
+cli.on('require', function (name) {
   console.log('Requiring external module', color.magenta(name));
 });
 
-cli.on('requireFail', function(name) {
+cli.on('requireFail', function (name) {
   console.log(color.red('Failed to load external module'), color.magenta(name));
 });
 
