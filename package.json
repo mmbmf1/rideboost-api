@@ -28,7 +28,7 @@
     "helmet": "^3.23.3",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.2",
-    "moment": "^2.27.0",
+    "moment": "^2.29.2",
     "moment-timezone": "^0.5.31",
     "morgan": "^1.10.0",
     "npm-check-updates": "^7.0.1",
